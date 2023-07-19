@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="JavaApplication" default="default" basedir=".">
+    <description>Builds, tests, and runs the project JavaApplication.</description>
+    <import file="nbproject/build-impl.xml"/>
+
+    <property name="ivy.jar.version" value="2.1.0"/>
+    <property name="ivy.jar.name" value="ivy-${ivy.jar.version}.jar"/>
+    <property name="ivy.home" value="${user.home}/.ivy2"/>
+    <available property="ivy.installed" file="${ivy.home}/${ivy.jar.name}"/>
+
+    <target name="ivy-install" unless="ivy.installed">
+        <mkdir dir="${ivy.home}"/>
+        <get src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.jar.version}/${ivy.jar.name}" dest="${ivy.home}/${ivy.jar.name}"/>
+    </target>
+
+    <target name="ivy-init" depends="ivy-install">
+        <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpath="${ivy.home}/${ivy.jar.name}"/>
+        <ivy:resolve/>
+    </target>
+    <target name="prepare" description="Generate POM" depends="jar,ivy-init">
+        <ivy:deliver deliverpattern="${build.dir}/ivy.xml" pubrevision="${revision}" status="release"/>
+        <ivy:makepom ivyfile="${build.dir}/ivy.xml" pomfile="${dist.dir}/JavaApplication.pom"/>
+    </target>
+    <target name="publish" depends="init,prepare" description="Upload to Nexus">
+        <ivy:publish resolver="archiva-internal" pubrevision="${revision}" overwrite="true" publishivy="false" >
+            <artifacts pattern="${dist.dir}/JavaApplication.[ext]"/>
+        </ivy:publish>
+    </target>
+    <target name="-pre-jar">
+        <copy flatten="true" todir="${dist.dir}/lib/">
+            <fileset dir="lib">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+        <copy file="${basedir}/src/AppSettings.properties" flatten="true" todir="${dist.dir}/"/>
+        <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
+        <pathconvert property="run.classpath.without.build.classes.dir">
+            <path path="${run.classpath}"/>
+            <map from="${build.classes.dir.resolved}" to=""/>
+        </pathconvert>
+        <pathconvert pathsep=" " property="jar.classpath">
+            <path path="${run.classpath.without.build.classes.dir}"/>
+            <chainedmapper>
+                <flattenmapper/>
+                <filtermapper>
+                    <replacestring from=" " to="%20"/>
+                </filtermapper>
+                <globmapper from="*" to="lib/*"/>
+            </chainedmapper>
+        </pathconvert>
+        <echo level="info">jat classpath: ${jar.classpath}</echo>
+        <manifest file="${manifest.file}" mode="update">
+            <attribute name="Main-Class" value="${main.class}"/>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
+        </manifest>
+    </target>
+    <target name="download-deps" depends="ivy-init" description="-->download dependecy">
+        <ivy:resolve/>
+        <ivy:retrieve/>
+        <pathconvert property="ivy.classpath.computed" dirsep="/" pathsep=":">
+            <path>
+                <fileset dir="lib" includes="*.jar"/>
+            </path>
+            <map from="${basedir}${file.separator}" to=""/>
+        </pathconvert>
+
+        <propertyfile file="nbproject/project.properties">
+            <entry operation="=" key="ivy.classpath" value="${ivy.classpath.computed}"/>
+        </propertyfile>
+        <replaceregexp file="nbproject/project.properties" match="^#.*\n" replace=""/>
+    </target>
+
+    <target name="-pre-compile" depends="download-deps"/>
+
+    <target name="-pre-compile-single" depends="download-deps"/>
+
+    <target name="clean-cache-ivy" depends="ivy-init"
+            description="delete all depency">
+        <ivy:cleancache/>
+        <propertyfile file="${basedir}/nbproject/project.properties">
+            <entry operation="=" key="ivy.classpath" value=""/>
+        </propertyfile>
+        <replaceregexp file="nbproject/project.properties" match="^#.*\n" replace=""/>
+    </target>
+</project>
+

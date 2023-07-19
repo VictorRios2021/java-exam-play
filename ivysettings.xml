@@ -1,0 +1,8 @@
+<ivysettings>
+  <settings defaultResolver="default"/>
+  <resolvers>
+    <chain name="default">
+      <!-- todo -->
+    </chain>
+  </resolvers>
+</ivysettings>

@@ -1,0 +1,7 @@
+<ivy-module version="1.0">
+  <info organisation="org.apache" module="default"/>
+  <dependencies>
+    <!-- <dependency /> -->
+    <!-- <dependency /> -->
+  </dependencies>
+</ivy-module>
