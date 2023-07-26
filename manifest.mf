@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.10.8
+Created-By: 17.0.7+7 (Eclipse Adoptium)
+Main-Class: main.JavaApplication
+Class-Path: lib/jssc-2.8.0.jar lib/log4j-core-2.20.0.jar lib/hamcrest-
+ core-1.3.jar lib/junit-4.12.jar
+
